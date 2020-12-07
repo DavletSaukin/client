@@ -1,7 +1,6 @@
 /*
  * client.cpp
  *
- *  Created on: 4 дек. 2020 г.
  *      Author: davlet
  */
 
@@ -18,14 +17,37 @@
 
 #include <netinet/in.h>
 
-char message[] = "Hello there!\n";
-char buf[sizeof(message)];
-
 
 int main()
 {
     int sock;
     struct sockaddr_in addr;
+
+    //enter login
+    char* loginBuf = new char[100];
+    std::cout << "login: " << std::endl;
+    std::cin >> loginBuf;
+
+    std::string login(loginBuf);
+    delete[] loginBuf;
+
+    std::cout << login << std::endl;
+    std::cout << "strlen(login): " << login.size() << std::endl;
+
+    //enter login
+    char* passwordBuf = new char[100];
+    std::cout << "password: " << std::endl;
+    std::cin >> passwordBuf;
+
+    std::string password(passwordBuf);
+    delete[] passwordBuf;
+
+    std::cout << password << std::endl;
+    std::cout << "strlen(password): " << password.size() << std::endl;
+
+
+    char buf[sizeof(login)];
+
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock < 0)
@@ -43,10 +65,21 @@ int main()
         exit(2);
     }
 
-    send(sock, message, sizeof(message), 0);
-    recv(sock, buf, sizeof(message), 0);
+    auto sendedBytes = send(sock, login.c_str(), login.size(), 0);
+    auto readedBytes = recv(sock, buf, login.size(), 0);
 
-    send(sock, nullptr, sizeof(message), 0);
+    std::cout << "sendedBytes: " << sendedBytes << std::endl;
+    std::cout << "readedBytes: " << readedBytes << std::endl;
+
+    std::cout <<"client: " << buf <<std::endl;
+
+    sendedBytes = send(sock, password.c_str(), password.size(), 0);
+    readedBytes = recv(sock, buf, login.size(), 0);
+
+    std::cout << "sendedBytes: " << sendedBytes << std::endl;
+    std::cout << "readedBytes: " << readedBytes << std::endl;
+
+    //send(sock, nullptr, sizeof(login), 0);
     std::cout <<"client: " << buf <<std::endl;
     close(sock);
 
