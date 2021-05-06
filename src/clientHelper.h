@@ -1,7 +1,7 @@
 /*
  * clientHelper.h
  *
- *      Author: davlet
+ *      Author: Davlet
  */
 
 #ifndef CLIENTHELPER_H_
@@ -18,22 +18,29 @@
 inline int connecter(int _sock, std::shared_ptr<struct sockaddr_in> addr)
 {
 	addr->sin_family = AF_INET;
-	addr->sin_port = htons(3425); // или любой другой порт...
+	addr->sin_port = htons(3425);
 	addr->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	return connect(_sock, (struct sockaddr *)addr.get(), sizeof(addr));
 }
 
 
-inline void authorization(int _sock)
+
+inline std::string getLogin()
 {
 	//enter login
-	char* loginBuf = new char[100];
-	std::cout << "login: " << std::endl;
-	std::cin >> loginBuf;
+    char* loginBuf = new char[100];
+    std::cout << "login: " << std::endl;
+    std::cin >> loginBuf;
 
-	std::string login(loginBuf);
-	delete[] loginBuf;
+    std::string login(loginBuf);
+    delete[] loginBuf;
 
+    return login;
+}
+
+
+inline std::string getPassword()
+{
 	//enter password
 	char* passwordBuf = new char[100];
 	std::cout << "password: " << std::endl;
@@ -42,9 +49,21 @@ inline void authorization(int _sock)
 	std::string password(passwordBuf);
 	delete[] passwordBuf;
 
+	return password;
+}
+
+
+inline void authorization(int _sock)
+{
+	//enter login
+	auto login = getLogin();
+
+	//enter password
+	auto password = getPassword();
+
 	short int serverMsg;
-	auto sendedBytes = send(_sock, login.c_str(), login.size(), 0);
-	auto readedBytes = recv(_sock, &serverMsg, sizeof(short int), 0);
+	send(_sock, login.c_str(), login.size(), 0);
+	recv(_sock, &serverMsg, sizeof(short int), 0);
 
 	if(serverMsg == 401)
 	{
@@ -52,12 +71,17 @@ inline void authorization(int _sock)
 		return;
 	}
 
-	sendedBytes = send(_sock, password.c_str(), password.size(), 0);
-	readedBytes = recv(_sock, &serverMsg, sizeof(short int), 0);
+	send(_sock, password.c_str(), password.size(), 0);
+	recv(_sock, &serverMsg, sizeof(short int), 0);
 
-	if(serverMsg != 200)
+	if(serverMsg == 200)
 	{
-		std::cout <<"Server error" << std::endl;
+		std::cout <<"Access is allowed" << std::endl;
+		return;
+	}
+	if(serverMsg == 401)
+	{
+		std::cout <<"Invalid password" << std::endl;
 		return;
 	}
 
@@ -67,24 +91,14 @@ inline void authorization(int _sock)
 inline void registration(int _sock)
 {
 	//enter login
-	char* loginBuf = new char[100];
-	std::cout << "login: " << std::endl;
-	std::cin >> loginBuf;
-
-	std::string login(loginBuf);
-	delete[] loginBuf;
+	auto login = getLogin();
 
 	//enter password
-	char* passwordBuf = new char[100];
-	std::cout << "password: " << std::endl;
-	std::cin >> passwordBuf;
-
-	std::string password(passwordBuf);
-	delete[] passwordBuf;
+	auto password = getPassword();
 
 	short int serverMsg;
-	auto sendedBytes = send(_sock, login.c_str(), login.size(), 0);
-	auto readedBytes = recv(_sock, &serverMsg, sizeof(short int), 0);
+	send(_sock, login.c_str(), login.size(), 0);
+	recv(_sock, &serverMsg, sizeof(short int), 0);
 
 	if(serverMsg == 401)
 	{
@@ -92,10 +106,15 @@ inline void registration(int _sock)
 		return;
 	}
 
-	sendedBytes = send(_sock, password.c_str(), password.size(), 0);
-	readedBytes = recv(_sock, &serverMsg, sizeof(short int), 0);
+	send(_sock, password.c_str(), password.size(), 0);
+	recv(_sock, &serverMsg, sizeof(short int), 0);
 
-	if(serverMsg != 200)
+	if(serverMsg == 200)
+	{
+		std::cout <<"Registration completed successfully" << std::endl;
+		return;
+	}
+	if(serverMsg == 401)
 	{
 		std::cout <<"Server error" << std::endl;
 		return;

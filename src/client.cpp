@@ -20,7 +20,7 @@ int main()
 	auto addrPtr = std::make_shared<struct sockaddr_in>();
 
 	short int req;
-	short int serverAnswer;
+	//short int serverAnswer;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock < 0)
@@ -55,3 +55,6 @@ int main()
 
     return 0;
 }
+
+
+
